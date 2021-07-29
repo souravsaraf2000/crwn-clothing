@@ -12,7 +12,7 @@ import Header from './components/header/header.component';
 
 import SignInAndSignUpPage from './pages/signin-and-signup/signin-and-signup.component';
 
-import {auth} from './firebase/firebase.util'
+import {auth,createUser} from './firebase/firebase.util'
 
 class App extends React.Component {
 
@@ -23,8 +23,24 @@ class App extends React.Component {
   unsubscribe = null
 
   componentDidMount(){
-    this.unsubscribe = auth.onAuthStateChanged(user=>{this.setState({currentUser:user})
-    console.log(user)})
+    this.unsubscribe = auth.onAuthStateChanged(async user=>{
+      if(user)
+      {
+        const ref = await createUser(user);
+        ref.onSnapshot(snapshot => 
+          this.setState({
+            currentUser:{
+              id: snapshot.id,
+              ...snapshot.data()
+            }
+          })
+        )
+      }
+      else
+      {
+        this.setState({currentUser:null});
+      }
+    });
   }
 
   componentWillUnmount(){
